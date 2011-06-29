@@ -47,11 +47,19 @@ class Scope:
         Input:
         channel: [1/2] which channel to query
 
+        Output:
+        Python list of data in -127..+127 range
         """
         size = 2500
         width = 1 # Scope internal data structure uses 8-bit data, here no gain to use width=2
         self.send("DATA:SOURCE CH%d;WIDTH %d;ENCDG RPB;STOP %d" % (channel,width,size))
         self.send("CURVE?")
+
+        # Reply header has the format: #42500?????
+        # where "#" is message start,
+        # "4" is that 4 ASCII digits will follow
+        # "2500" the number of bytes of the data that follows
+        # "??????..." binary data, altogether 2500 byte in this case
         tmp = self.handle.read(2)
         digits = int(tmp[1])
         tmp = self.handle.read(digits)
